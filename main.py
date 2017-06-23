@@ -29,6 +29,9 @@ def parseLog(log):
             'captcha_count': 0,
             'is_google_ip': False
         }
+
+    if ip_score['is_google_ip']:
+        return False
     score = ip_score['score']
 
     myprint(ip, "IP", ip)
@@ -57,11 +60,15 @@ def parseLog(log):
         score = score * config.USERAGENT / 1000
         myprint(ip, "CHANGE", "USERAGENT")
         myprint(ip, "AFTER", score)
-    score = score * frequency.checkFrequency(log)
+    factor, new_ip_score = frequency.checkFrequency(log)
+    score = score * factor
+    if new_ip_score is not None and 'frequency' in new_ip_score:
+        ip_score['frequency'] = new_ip_score['frequency']
+
     myprint(ip, "CHANGE", "FREQUENCY")
     myprint(ip, "AFTER", score)
     if user_agent.checkGoogleBot(log['user_agent']):
-        if ip_score['is_google_ip'] or dns.checkGoogleBot(ip):
+        if dns.checkGoogleBot(ip):
             ip_score['is_google_ip'] = True
         else:
             score = score * config.BADGOOGLEBOT / 1000
@@ -82,11 +89,8 @@ if __name__ == '__main__':
     if len(sys.argv) < 2:
         print 'USAGE:', sys.argv[0], 'NUM_LOGS'
         sys.exit(1)
-    found_logs = db.logs.find().limit(int(sys.argv[1])).sort([('time', 1)])
-    i = 0
+    found_logs = db.logs.find().limit(int(sys.argv[1]))
     for log in found_logs:
-        print i + 1
-        i = i + 1
         log['remote_ip'] = [x.strip() for x in log['remote_ip'].split(',')][-1]
         parseLog(log)
 
