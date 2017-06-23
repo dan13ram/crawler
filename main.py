@@ -1,4 +1,5 @@
 import sys
+import progressbar
 import db
 import config
 import geo
@@ -89,8 +90,15 @@ if __name__ == '__main__':
     if len(sys.argv) < 2:
         print 'USAGE:', sys.argv[0], 'NUM_LOGS'
         sys.exit(1)
-    found_logs = db.logs.find().limit(int(sys.argv[1]))
+    total = int(sys.argv[1])
+    found_logs = db.logs.find().limit(total)
+    bar = progressbar.ProgressBar(maxval=total, widgets=[progressbar.Bar('=', '[', ']'), ' ', progressbar.Percentage()])
+    bar.start()
+    count = 0
     for log in found_logs:
         log['remote_ip'] = [x.strip() for x in log['remote_ip'].split(',')][-1]
         parseLog(log)
-
+        count = count + 1
+        bar.update(count)
+    bar.finish()
+    print 'DONE'
