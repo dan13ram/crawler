@@ -34,6 +34,7 @@ def parseLog(log):
     if ip_score['is_google_ip']:
         return False
     score = ip_score['score']
+    ip_score['last_time'] = log['time']
 
     myprint(ip, "IP", ip)
     myprint(ip, "INIT", score)

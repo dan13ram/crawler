@@ -12,7 +12,7 @@ def checkFrequency(log):
                 total = sum(ip_score['frequency'])
                 if total > config.FREQUENCY_REQUESTS:
                     mean = total / config.FREQUENCY_INTERVALS
-                    factor = abs(ip_score['frequency'][current_interval] - mean) / total
+                    factor = abs(ip_score['frequency'][current_interval] - mean) * 1.0 / total
                     return_factor = 1 - factor ** 2
     except:
         pass
